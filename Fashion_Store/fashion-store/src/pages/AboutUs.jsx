@@ -4,11 +4,18 @@ import {
   FiInstagram, FiTwitter, FiFacebook 
 } from 'react-icons/fi';
 
-// Online images - replace with your actual company images
+// Online images
 const heroImage = 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80';
-const teamImage = 'https://images.unsplash.com/photo-1521737852567-6949f3f9f2b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80';
 const founderImage = 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80';
 const storeImage = 'https://images.unsplash.com/photo-1551232864-3f0890e580d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1987&q=80';
+
+// Team member images (updated with distinct fashion professional photos)
+const teamImages = [
+  'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80', // Alexandra Chen
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80', // Jamal Williams
+  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80', // Sophia Rodriguez
+  'https://images.unsplash.com/photo-1552058544-f2b08422138a?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80'  // Marcus Lee
+];
 
 const AboutUs = () => {
   return (
@@ -34,7 +41,6 @@ const AboutUs = () => {
             <p className="text-xl text-white/90 max-w-2xl mx-auto">
               Crafting timeless fashion with purpose since 2015
             </p>
-           
           </div>
         </div>
       </section>
@@ -166,7 +172,7 @@ const AboutUs = () => {
               <div key={index} className="bg-gray-800 p-6 rounded-lg hover:bg-gray-700 transition">
                 <div className="bg-gray-700 h-48 rounded-lg mb-4 overflow-hidden">
                   <img 
-                    src={teamImage} 
+                    src={teamImages[index]} 
                     alt={member.name}
                     className="w-full h-full object-cover"
                   />

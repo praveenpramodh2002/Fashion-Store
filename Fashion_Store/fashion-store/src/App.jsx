@@ -8,6 +8,9 @@ import AboutUs from './pages/AboutUs';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 
+import NewArrivals from './Shop/NewArrivals';
+import BestsellersPage from './Shop/BestSale';
+
 const App = () => {
   return (
     <Router>
@@ -15,6 +18,7 @@ const App = () => {
         {/* Routes WITHOUT Layout (no Navbar/Footer) */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+        
 
         {/* Routes WITH Layout (includes Navbar/Footer) */}
         <Route
@@ -25,6 +29,10 @@ const App = () => {
                 <Route path="/" element={<Home />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/about" element={<AboutUs />} />
+                  <Route path="/new-arrivals" element={<NewArrivals />} />
+                  <Route path="/bestsellers" element={<BestsellersPage />} />
+               
+
               </Routes>
             </Layout>
           }
