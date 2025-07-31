@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiHeart, FiShoppingBag, FiStar, FiArrowRight, FiX } from 'react-icons/fi';
 import fashionVideo from '../video/into.mp4';
 
-// Payment logos (replace with your actual logo imports or SVGs)
+// Payment logos
 const KokoLogo = () => (
   <svg viewBox="0 0 100 30" className="h-5">
     <text x="0" y="20" fontFamily="Arial" fontSize="20" fill="#000">Koko</text>
@@ -22,6 +22,38 @@ const NewArrivals = () => {
   const [selectedColor, setSelectedColor] = useState('Black');
   const [selectedSize, setSelectedSize] = useState('S');
   const [quantity, setQuantity] = useState(1);
+  const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
+
+  // Load cart and wishlist from localStorage on component mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem('fashionCart');
+    const savedWishlist = localStorage.getItem('fashionWishlist');
+    
+    if (savedCart) {
+      setCart(JSON.parse(savedCart));
+      setCartCount(JSON.parse(savedCart).length);
+    }
+    
+    if (savedWishlist) {
+      setWishlist(JSON.parse(savedWishlist));
+      setWishlistCount(JSON.parse(savedWishlist).length);
+    }
+  }, []);
+
+  // Save cart and wishlist to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('fashionCart', JSON.stringify(cart));
+    setCartCount(cart.length);
+  }, [cart]);
+
+  useEffect(() => {
+    localStorage.setItem('fashionWishlist', JSON.stringify(wishlist));
+    setWishlistCount(wishlist.length);
+  }, [wishlist]);
 
   const allProducts = [
     {
@@ -114,6 +146,15 @@ const NewArrivals = () => {
     }
   ];
 
+  // Add a notification and remove it after 3 seconds
+  const addNotification = (message, type) => {
+    const id = Date.now();
+    setNotifications(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    }, 3000);
+  };
+
   // Sort products based on selected option
   const sortedProducts = [...allProducts].sort((a, b) => {
     if (sortOption === 'price-low') return a.price - b.price;
@@ -155,10 +196,106 @@ const NewArrivals = () => {
     return (price / installments).toFixed(2);
   };
 
+  const addToCart = () => {
+    if (!selectedProduct) return;
+    
+    const cartItem = {
+      ...selectedProduct,
+      selectedColor,
+      selectedSize,
+      quantity,
+      cartId: `${selectedProduct.id}-${selectedColor}-${selectedSize}` // Unique ID for cart items
+    };
+    
+    // Check if item already exists in cart
+    const existingItemIndex = cart.findIndex(item => 
+      item.id === selectedProduct.id && 
+      item.selectedColor === selectedColor && 
+      item.selectedSize === selectedSize
+    );
+    
+    if (existingItemIndex >= 0) {
+      // Update quantity if item exists
+      const updatedCart = [...cart];
+      updatedCart[existingItemIndex].quantity += quantity;
+      setCart(updatedCart);
+      addNotification(`${selectedProduct.title} quantity updated in cart`, 'cart');
+    } else {
+      // Add new item to cart
+      setCart(prev => [...prev, cartItem]);
+      addNotification(`${selectedProduct.title} added to cart`, 'cart');
+    }
+    
+    closeProductDetails();
+  };
+
+  const toggleWishlist = (productId, e) => {
+    e?.stopPropagation(); // Prevent triggering the parent click event if event is provided
+    
+    if (wishlist.includes(productId)) {
+      setWishlist(prev => prev.filter(id => id !== productId));
+      addNotification('Removed from wishlist', 'wishlist');
+    } else {
+      setWishlist(prev => [...prev, productId]);
+      addNotification('Added to wishlist', 'wishlist');
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white relative">
+      {/* Header with cart and wishlist indicators */}
+      <header className="fixed top-0 left-0 right-0 bg-white z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <h1 className="text-xl font-light">FASHION</h1>
+          <div className="flex space-x-6">
+            <button 
+              className="relative"
+              onClick={() => {
+                // Navigate to wishlist or show wishlist items
+                addNotification('Wishlist clicked', 'wishlist');
+              }}
+            >
+              <FiHeart className="w-5 h-5" />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {wishlistCount}
+                </span>
+              )}
+            </button>
+            <button 
+              className="relative"
+              onClick={() => {
+                // Navigate to cart or show cart items
+                addNotification('Cart clicked', 'cart');
+              }}
+            >
+              <FiShoppingBag className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Notifications */}
+      <div className="fixed top-20 right-4 space-y-2 z-50">
+        {notifications.map(notification => (
+          <div 
+            key={notification.id}
+            className={`px-4 py-2 rounded-md shadow-lg text-white ${
+              notification.type === 'cart' ? 'bg-green-500' : 'bg-pink-500'
+            } animate-fade-in-out`}
+          >
+            {notification.message}
+          </div>
+        ))}
+      </div>
+
       {/* Hero Section */}
-      <section className="relative h-[70vh] min-h-[500px] overflow-hidden">
+      <section className="relative h-[70vh] min-h-[500px] overflow-hidden mt-16">
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/20 z-10" />
         
         <video 
@@ -210,7 +347,11 @@ const NewArrivals = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {displayedProducts.map((product) => (
-            <article key={product.id} className="group relative">
+            <article 
+              key={product.id} 
+              className="group relative cursor-pointer"
+              onClick={() => openProductDetails(product)}
+            >
               <div className="aspect-[3/4] overflow-hidden relative bg-gray-100">
                 <img 
                   src={product.image} 
@@ -231,8 +372,13 @@ const NewArrivals = () => {
                       />
                     ))}
                   </div>
-                  <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition">
-                    <FiHeart className="text-gray-700" />
+                  <button 
+                    className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition"
+                    onClick={(e) => toggleWishlist(product.id, e)}
+                  >
+                    <FiHeart 
+                      className={`${wishlist.includes(product.id) ? 'text-red-500 fill-red-500' : 'text-gray-700'}`} 
+                    />
                   </button>
                 </div>
               </div>
@@ -240,7 +386,7 @@ const NewArrivals = () => {
                 <p className="text-gray-500 text-sm">{product.category}</p>
                 <h3 className="font-light text-lg mt-1">{product.title}</h3>
                 <div className="flex justify-between items-center mt-2">
-                  <p className="font-medium">${product.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                  <p className="font-medium">${product.price.toFixed(2)}</p>
                   <div className="flex items-center">
                     <FiStar className="text-amber-400" />
                     <span className="text-sm ml-1">{product.rating}.0</span>
@@ -249,7 +395,10 @@ const NewArrivals = () => {
               </div>
               <button 
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center bg-black/30"
-                onClick={() => openProductDetails(product)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openProductDetails(product);
+                }}
               >
                 <div className="bg-white px-6 py-2 rounded-full flex items-center">
                   <FiShoppingBag className="mr-2" />
@@ -324,7 +473,7 @@ const NewArrivals = () => {
                 <p className="text-gray-500 mb-4">{selectedProduct.category}</p>
                 
                 <div className="mb-4">
-                  <p className="text-xl font-medium">${selectedProduct.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                  <p className="text-xl font-medium">${selectedProduct.price.toFixed(2)}</p>
                   <div className="text-sm text-gray-500 mt-1 space-y-1">
                     <div className="flex items-center">
                       <span>or 3 payments of ${calculateInstallments(selectedProduct.price, 3)} with</span>
@@ -399,7 +548,10 @@ const NewArrivals = () => {
                 </div>
                 
                 <div className="space-y-3">
-                  <button className="w-full bg-black text-white py-3 hover:bg-gray-800 transition">
+                  <button 
+                    className="w-full bg-black text-white py-3 hover:bg-gray-800 transition"
+                    onClick={addToCart}
+                  >
                     Add to cart
                   </button>
                   
@@ -408,9 +560,28 @@ const NewArrivals = () => {
                   </button>
                 </div>
                 
-                <button className="mt-4 text-sm underline flex items-center hover:text-gray-600 transition">
-                  View full details <FiArrowRight className="ml-1" />
-                </button>
+                <div className="mt-4 flex items-center space-x-4">
+                  <button 
+                    className="text-sm underline flex items-center hover:text-gray-600 transition"
+                    onClick={() => toggleWishlist(selectedProduct.id)}
+                  >
+                    {wishlist.includes(selectedProduct.id) ? (
+                      <>
+                        <FiHeart className="text-red-500 fill-red-500 mr-1" />
+                        <span>Remove from wishlist</span>
+                      </>
+                    ) : (
+                      <>
+                        <FiHeart className="mr-1" />
+                        <span>Add to wishlist</span>
+                      </>
+                    )}
+                  </button>
+                  
+                  <button className="text-sm underline flex items-center hover:text-gray-600 transition">
+                    View full details <FiArrowRight className="ml-1" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
