@@ -14,26 +14,19 @@ const navLinks = [
     submenu: [
       { 
         name: 'New Arrivals', 
-        path: '/new-arrivals',
+        path: '/shop/new-arrivals',
         icon: <FiCalendar className="mr-2 w-4 h-4" />
       },
       { 
         name: 'Bestsellers', 
-        path: '/bestsellers',
+        path: '/shop/bestsellers',
         icon: <FiTrendingUp className="mr-2 w-4 h-4" />
       },
       { name: 'Sale', path: '/shop/sale' },
-      { name: 'Collections', path: '/shop/collections' }
-    ]
-  },
-  { 
-    name: 'Categories', 
-    path: '/categories',
-    submenu: [
-      { name: 'Dresses', path: '/categories/dresses' },
-    
-      { name: 'Outerwear', path: '/categories/outerwear' },
-      { name: 'Accessories', path: '/categories/accessories' }
+      { name: 'Collections', path: '/shop/collections' },
+      { name: 'Dresses', path: '/shop/dresses' },
+      { name: 'Outerwear', path: '/shop/outerwear' },
+      { name: 'Accessories', path: '/shop/accessories' }
     ]
   },
   { name: 'About', path: '/about' },

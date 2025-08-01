@@ -294,10 +294,8 @@ const SalePage = () => {
   };
 
   const handleViewDetails = (product) => {
-    if (showModal) {
-      closeModal();
-    }
-    navigate(product.link);
+    closeModal(); // Close the modal if it's open
+    navigate(product.link); // Navigate to the product details page
   };
 
   return (
@@ -627,7 +625,10 @@ const SalePage = () => {
                             Add to Bag
                           </button>
                           <button
-                            onClick={() => handleViewDetails(quickViewProduct)}
+                            onClick={() => {
+                              closeModal();
+                              navigate(quickViewProduct.link);
+                            }}
                             className="flex-1 bg-white border border-black text-black px-4 py-3 text-sm font-medium hover:bg-gray-100 transition-colors"
                           >
                             View Full Details

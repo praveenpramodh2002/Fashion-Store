@@ -12,7 +12,12 @@ import NewArrivals from './Shop/NewArrivals';
 import BestsellersPage from './Shop/BestSale';
 import SalePage from './Shop/Salle';
 import Collections from './Shop/Collections';
+
 import DressesPage from './Categories/Dresses';
+import MensOutwearPage from './Categories/Outwear';
+import AccessoriesPage from './Categories/Accerious';
+import SummerCollection from './Categories/Summercollection';
+
 
 const App = () => {
   return (
@@ -37,6 +42,9 @@ const App = () => {
                   <Route path="/shop/sale" element={<SalePage />} />
                   <Route path="/shop/collections" element={<Collections />} />
                   <Route path="/shop/dresses" element={<DressesPage />} />
+                  <Route path="/shop/outerwear" element={<MensOutwearPage />} />
+                  <Route path="/shop/accessories" element={<AccessoriesPage />} />
+                  <Route path="/shop/summer-collection" element={<SummerCollection />} />
                
 
               </Routes>

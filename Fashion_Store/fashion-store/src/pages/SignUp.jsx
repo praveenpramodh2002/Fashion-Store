@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiShoppingBag } from 'react-icons/fi';
 import { FcGoogle } from 'react-icons/fc';
 // Import your background image (place it in your src/assets folder)
-import fashionBg from '../image/background.jpeg'; // Adjust path as needed
+import fashionBg from '../image/b5.jpeg'; // Adjust path as needed
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
