@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Lock, Mail, ShoppingBag } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -13,10 +15,14 @@ const Login = () => {
     e.preventDefault();
     console.log('Login:', form);
     // Add your authentication logic here
+    // For demo purposes, we'll navigate to home after submit
+    navigate('/');
   };
 
   const handleGoogleLogin = () => {
     console.log('Google login clicked');
+    // For demo purposes, we'll navigate to home after click
+    navigate('/');
   };
 
   return (

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiHeart, FiShoppingBag, FiStar, FiFilter, FiX, FiChevronRight } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import summerImage from '../image/banner5.png'; // Import the summer image
 
 const SummerCollection = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -11,8 +12,7 @@ const SummerCollection = () => {
   const [wishlist, setWishlist] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState(null);
-  const videoRef = useRef(null);
-  const [isVideoReady, setIsVideoReady] = useState(false);
+  const [cart, setCart] = useState([]); // Added cart state
 
   // Categories
   const categories = [
@@ -73,7 +73,7 @@ const SummerCollection = () => {
       name: 'Crochet Beach Set',
       price: 89.99,
       category: 'sets',
-      image: 'https://images.unsplash.com/photo-1585487000160-6ebcfceb595d?ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80',
+      image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80',
       rating: 4.7,
       colors: ['White', 'Beige', 'Ecru'],
       description: 'Handmade crochet top and skirt set perfect for summer.',
@@ -91,26 +91,6 @@ const SummerCollection = () => {
     }
   ];
 
-  // Video setup
-  useEffect(() => {
-    const video = videoRef.current;
-    if (video) {
-      video.addEventListener('canplay', () => setIsVideoReady(true));
-      const playPromise = video.play();
-      
-      if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          console.log("Video autoplay prevented:", error);
-          setIsVideoReady(false);
-        });
-      }
-    }
-    
-    return () => {
-      if (video) video.removeEventListener('canplay', () => setIsVideoReady(true));
-    };
-  }, []);
-
   const filteredProducts = activeFilter === 'all' 
     ? products 
     : products.filter(product => product.category === activeFilter);
@@ -118,6 +98,7 @@ const SummerCollection = () => {
   const openProductModal = (product) => {
     setSelectedProduct(product);
     setSelectedColor(product.colors[0]);
+    setQuantity(1); // Reset quantity when opening modal
     setIsModalOpen(true);
     document.body.style.overflow = 'hidden';
   };
@@ -136,69 +117,80 @@ const SummerCollection = () => {
   };
 
   const addToCart = () => {
-    // Add to cart functionality
-    console.log('Added to cart:', {
+    if (!selectedProduct) return;
+    
+    const cartItem = {
       ...selectedProduct,
       quantity,
-      selectedColor
+      selectedColor,
+      id: `${selectedProduct.id}-${selectedColor}`, // Create unique ID for cart items
+      price: selectedProduct.price * quantity // Calculate total price for this item
+    };
+    
+    setCart(prevCart => {
+      // Check if item already exists in cart
+      const existingItemIndex = prevCart.findIndex(
+        item => item.id === cartItem.id
+      );
+      
+      if (existingItemIndex >= 0) {
+        // Update quantity if item exists
+        const updatedCart = [...prevCart];
+        updatedCart[existingItemIndex].quantity += quantity;
+        updatedCart[existingItemIndex].price = 
+          selectedProduct.price * updatedCart[existingItemIndex].quantity;
+        return updatedCart;
+      } else {
+        // Add new item to cart
+        return [...prevCart, cartItem];
+      }
     });
+    
     closeModal();
   };
 
   return (
     <div className="bg-white">
-      {/* Hero Video Section */}
-      <div className="relative h-screen max-h-[800px] min-h-[600px] overflow-hidden">
+      {/* Hero Image Section - Adjusted height */}
+      <div className="relative h-[70vh] min-h-[500px] max-h-[800px] overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-yellow-100/20 via-transparent to-transparent z-10" />
         
-        <video
-          ref={videoRef}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className={`w-full h-full object-cover transition-opacity duration-1000 ${isVideoReady ? 'opacity-100' : 'opacity-0'}`}
-          poster="https://images.unsplash.com/photo-1519046904884-53103b34b206?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-        >
-          <source src="https://assets.mixkit.co/videos/preview/mixkit-woman-in-a-swimsuit-underwater-with-tropical-fish-1868-large.mp4" type="video/mp4" />
-        </video>
+        <img
+          src={summerImage}
+          alt="Summer Collection"
+          className="w-full h-full object-cover"
+        />
         
-        {!isVideoReady && (
-          <img
-            src="https://images.unsplash.com/photo-1519046904884-53103b34b206?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-            alt="Summer Collection"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        )}
-        
-        <div className="absolute bottom-0 left-0 right-0 z-20 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4"
-          >
-            Summer Collection
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-xl md:text-2xl text-white/90 max-w-2xl mb-8"
-          >
-            Bright colors, lightweight fabrics, and effortless style for your sunniest days
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Link 
-              to="/shop" 
-              className="inline-flex items-center bg-white text-sunset-orange px-6 py-3 rounded-full font-medium hover:bg-opacity-90 transition-all"
+        <div className="absolute inset-0 z-20 flex items-center justify-center text-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          <div className="text-center">
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4"
             >
-              Shop Now <FiChevronRight className="ml-2" />
-            </Link>
-          </motion.div>
+              Summer Collection
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto mb-8"
+            >
+              Bright colors, lightweight fabrics, and effortless style for your sunniest days
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Link 
+                to="/shop" 
+                className="inline-flex items-center bg-white text-sunset-orange px-6 py-3 rounded-full font-medium hover:bg-opacity-90 transition-all"
+              >
+                Shop Now <FiChevronRight className="ml-2" />
+              </Link>
+            </motion.div>
+          </div>
         </div>
       </div>
 
