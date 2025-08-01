@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   FiSearch, FiShoppingBag, FiHeart, FiMenu, FiX, FiUser, FiChevronDown,
@@ -31,8 +31,7 @@ const navLinks = [
     path: '/categories',
     submenu: [
       { name: 'Dresses', path: '/categories/dresses' },
-      { name: 'Tops', path: '/categories/tops' },
-      { name: 'Bottoms', path: '/categories/bottoms' },
+    
       { name: 'Outerwear', path: '/categories/outerwear' },
       { name: 'Accessories', path: '/categories/accessories' }
     ]
@@ -41,7 +40,7 @@ const navLinks = [
   { name: 'Contact', path: '/contact' }
 ];
 
-const Navbar = () => {
+const Navbar = ({ cartItems = [], wishlistItems = [], onRemoveFromCart, onRemoveFromWishlist }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
@@ -53,27 +52,7 @@ const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-
-  // Sample data states
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: 'Premium Denim Jacket',
-      price: 89.99,
-      quantity: 1,
-      size: 'M',
-      color: 'Black',
-      image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'
-    }
-  ]);
-  const [wishlistItems, setWishlistItems] = useState([
-    {
-      id: 3,
-      name: 'High-Waisted Trousers',
-      price: 65.99,
-      image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'
-    }
-  ]);
+  const navRef = useRef(null);
 
   // Sample user data
   const userData = {
@@ -83,7 +62,7 @@ const Navbar = () => {
     membership: 'Gold Member',
     joinDate: 'Joined January 2022',
     orderCount: 12,
-    wishlistCount: 8,
+    wishlistCount: wishlistItems.length,
     rewardsPoints: 1250
   };
 
@@ -103,17 +82,11 @@ const Navbar = () => {
   // Close all popups when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showCart && !event.target.closest('.cart-popup') && !event.target.closest('.cart-button')) {
-        setShowCart(false);
-      }
-      if (showWishlist && !event.target.closest('.wishlist-popup') && !event.target.closest('.wishlist-button')) {
-        setShowWishlist(false);
-      }
-      if (showUserMenu && !event.target.closest('.user-menu-popup') && !event.target.closest('.user-menu-button')) {
-        setShowUserMenu(false);
-      }
-      if (activeSubmenu && !event.target.closest('.nav-item')) {
-        setActiveSubmenu(null);
+      if (navRef.current && !navRef.current.contains(event.target)) {
+        if (showCart) setShowCart(false);
+        if (showWishlist) setShowWishlist(false);
+        if (showUserMenu) setShowUserMenu(false);
+        if (activeSubmenu) setActiveSubmenu(null);
       }
     };
 
@@ -131,26 +104,34 @@ const Navbar = () => {
     navigate('/login');
   };
 
-  const removeFromCart = (id) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
+  const handleRemoveFromCart = (id) => {
+    if (onRemoveFromCart) {
+      onRemoveFromCart(id);
+    }
   };
 
-  const removeFromWishlist = (id) => {
-    setWishlistItems(wishlistItems.filter(item => item.id !== id));
+  const handleRemoveFromWishlist = (id) => {
+    if (onRemoveFromWishlist) {
+      onRemoveFromWishlist(id);
+    }
   };
 
   const toggleSubmenu = (menuName) => {
     setActiveSubmenu(activeSubmenu === menuName ? null : menuName);
   };
 
-  const handleNavLinkClick = (e, hasSubmenu) => {
-    if (hasSubmenu) {
+  const handleDesktopNavItemClick = (e, link) => {
+    if (link.submenu) {
       e.preventDefault();
+      toggleSubmenu(link.name);
     }
   };
 
   return (
-    <header className={`fixed w-full z-50 transition-all duration-500 ${scrolled ? 'bg-white/95 backdrop-blur-lg shadow-lg py-2' : 'bg-transparent py-4'}`}>
+    <header 
+      className={`fixed w-full z-50 transition-all duration-500 ${scrolled ? 'bg-white/95 backdrop-blur-lg shadow-lg py-2' : 'bg-white py-4'}`}
+      ref={navRef}
+    >
       {/* Search Bar */}
       {showSearch && (
         <div className="bg-white py-3 px-4 shadow-md">
@@ -179,7 +160,7 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link to="/" className="text-2xl font-serif font-bold">
-              PEPPER<span className={scrolled ? "text-gray-600" : "text-white/70"}>STREET</span>
+              PEPPER<span className={scrolled ? "text-gray-600" : "text-gray-800"}>STREET</span>
             </Link>
           </div>
 
@@ -188,22 +169,25 @@ const Navbar = () => {
             {navLinks.map((link) => (
               <div 
                 key={link.name} 
-                className="relative group nav-item"
-                onMouseEnter={() => setActiveSubmenu(link.name)}
-                onMouseLeave={() => setActiveSubmenu(null)}
+                className="relative group"
               >
                 <div className="flex items-center">
                   <Link 
                     to={link.path} 
-                    className={`${scrolled ? 'text-gray-900 hover:text-black' : 'text-white hover:text-white/80'} font-medium flex items-center transition-all duration-300`}
-                    onClick={(e) => handleNavLinkClick(e, link.submenu)}
+                    className={`${scrolled ? 'text-gray-900 hover:text-black' : 'text-gray-800 hover:text-black'} font-medium flex items-center transition-all duration-300`}
+                    onClick={(e) => handleDesktopNavItemClick(e, link)}
+                    onMouseEnter={() => setActiveSubmenu(link.name)}
                   >
                     {link.name}
                   </Link>
                   {link.submenu && (
                     <button 
-                      onClick={() => toggleSubmenu(link.name)}
-                      className={`ml-1 ${scrolled ? 'text-gray-900 hover:text-black' : 'text-white hover:text-white/80'}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleSubmenu(link.name);
+                      }}
+                      onMouseEnter={() => setActiveSubmenu(link.name)}
+                      className={`ml-1 ${scrolled ? 'text-gray-900 hover:text-black' : 'text-gray-800 hover:text-black'}`}
                     >
                       <FiChevronDown className={`w-4 h-4 transition-transform ${activeSubmenu === link.name ? 'transform rotate-180' : ''}`} />
                     </button>
@@ -211,8 +195,9 @@ const Navbar = () => {
                 </div>
                 {link.submenu && activeSubmenu === link.name && (
                   <div 
-                    className="absolute left-0 mt-2 w-56 bg-white/95 backdrop-blur-lg shadow-xl rounded-lg py-2 z-50 border border-white/20"
-                    onClick={(e) => e.stopPropagation()}
+                    className="absolute left-0 mt-0 w-56 bg-white/95 backdrop-blur-lg shadow-xl rounded-lg py-2 z-50 border border-white/20"
+                    onMouseEnter={() => setActiveSubmenu(link.name)}
+                    onMouseLeave={() => setActiveSubmenu(null)}
                   >
                     {link.submenu.map((subItem) => (
                       <Link
@@ -221,7 +206,6 @@ const Navbar = () => {
                         className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100/50 transition-colors text-sm"
                         onClick={() => {
                           setActiveSubmenu(null);
-                          navigate(subItem.path);
                         }}
                       >
                         {subItem.icon}
@@ -237,7 +221,7 @@ const Navbar = () => {
           {/* Right Side Icons */}
           <div className="flex items-center space-x-6">
             <button 
-              className={`${scrolled ? 'text-gray-700 hover:text-black' : 'text-white hover:text-white/80'} transition-colors`}
+              className={`${scrolled ? 'text-gray-700 hover:text-black' : 'text-gray-800 hover:text-black'} transition-colors`}
               onClick={() => setShowSearch(!showSearch)}
             >
               <FiSearch className="w-5 h-5" />
@@ -246,11 +230,12 @@ const Navbar = () => {
             {/* Wishlist Button and Popup */}
             <div className="relative">
               <button 
-                className={`wishlist-button ${scrolled ? 'text-gray-700 hover:text-black' : 'text-white hover:text-white/80'} relative transition-colors`}
+                className={`wishlist-button ${scrolled ? 'text-gray-700 hover:text-black' : 'text-gray-800 hover:text-black'} relative transition-colors`}
                 onClick={() => {
                   setShowWishlist(!showWishlist);
                   setShowCart(false);
                   setShowUserMenu(false);
+                  setActiveSubmenu(null);
                 }}
               >
                 <FiHeart className="w-5 h-5" />
@@ -281,7 +266,7 @@ const Navbar = () => {
                           </div>
                           <button 
                             className="text-gray-400 hover:text-red-500 transition-colors"
-                            onClick={() => removeFromWishlist(item.id)}
+                            onClick={() => handleRemoveFromWishlist(item.id)}
                           >
                             <FiTrash2 className="w-4 h-4" />
                           </button>
@@ -311,11 +296,12 @@ const Navbar = () => {
             {/* Cart Button and Popup */}
             <div className="relative">
               <button 
-                className={`cart-button ${scrolled ? 'text-gray-700 hover:text-black' : 'text-white hover:text-white/80'} relative transition-colors`}
+                className={`cart-button ${scrolled ? 'text-gray-700 hover:text-black' : 'text-gray-800 hover:text-black'} relative transition-colors`}
                 onClick={() => {
                   setShowCart(!showCart);
                   setShowWishlist(false);
                   setShowUserMenu(false);
+                  setActiveSubmenu(null);
                 }}
               >
                 <FiShoppingBag className="w-5 h-5" />
@@ -348,7 +334,7 @@ const Navbar = () => {
                                 <p className="text-sm text-gray-600">${item.price.toFixed(2)} × {item.quantity}</p>
                                 <button 
                                   className="text-gray-400 hover:text-red-500 transition-colors"
-                                  onClick={() => removeFromCart(item.id)}
+                                  onClick={() => handleRemoveFromCart(item.id)}
                                 >
                                   <FiTrash2 className="w-4 h-4" />
                                 </button>
@@ -401,14 +387,15 @@ const Navbar = () => {
               {isLoggedIn ? (
                 <>
                   <button 
-                    className={`user-menu-button ${scrolled ? 'text-gray-700 hover:text-black' : 'text-white hover:text-white/80'} transition-colors`}
+                    className={`user-menu-button ${scrolled ? 'text-gray-700 hover:text-black' : 'text-gray-800 hover:text-black'} transition-colors`}
                     onClick={() => {
                       setShowUserMenu(!showUserMenu);
                       setShowCart(false);
                       setShowWishlist(false);
+                      setActiveSubmenu(null);
                     }}
                   >
-                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white/50 hover:border-white/80 transition-colors">
+                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-300 hover:border-gray-500 transition-colors">
                       <img 
                         src={userData.avatar} 
                         alt="User Avatar" 
@@ -524,7 +511,7 @@ const Navbar = () => {
               ) : (
                 <Link 
                   to="/login" 
-                  className={`${scrolled ? 'text-gray-700 hover:text-black' : 'text-white hover:text-white/80'} transition-colors`}
+                  className={`${scrolled ? 'text-gray-700 hover:text-black' : 'text-gray-800 hover:text-black'} transition-colors`}
                 >
                   <FiUser className="w-5 h-5" />
                 </Link>
@@ -533,7 +520,7 @@ const Navbar = () => {
 
             {/* Mobile Menu Button */}
             <button 
-              className={`md:hidden ${scrolled ? 'text-gray-700 hover:text-black' : 'text-white hover:text-white/80'} transition-colors`}
+              className={`md:hidden ${scrolled ? 'text-gray-700 hover:text-black' : 'text-gray-800 hover:text-black'} transition-colors`}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <FiX className="w-6 h-6" /> : <FiMenu className="w-6 h-6" />}
@@ -548,48 +535,42 @@ const Navbar = () => {
           <div className="px-4 pt-2 pb-6 space-y-1">
             {navLinks.map((link) => (
               <div key={link.name} className="nav-item">
-                <div className="flex items-center justify-between">
+                {link.submenu ? (
+                  <>
+                    <button
+                      className="w-full flex items-center justify-between px-3 py-2 text-gray-900 hover:bg-gray-100/50 rounded-lg text-base font-medium transition-colors"
+                      onClick={() => toggleSubmenu(link.name)}
+                    >
+                      <span>{link.name}</span>
+                      <FiChevronDown className={`w-4 h-4 transition-transform ${activeSubmenu === link.name ? 'transform rotate-180' : ''}`} />
+                    </button>
+                    {activeSubmenu === link.name && (
+                      <div className="pl-4 space-y-1">
+                        {link.submenu.map((subItem) => (
+                          <Link
+                            key={subItem.name}
+                            to={subItem.path}
+                            className="flex items-center px-3 py-2 text-gray-600 hover:bg-gray-50/50 rounded-lg text-sm transition-colors"
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              setActiveSubmenu(null);
+                            }}
+                          >
+                            {subItem.icon}
+                            {subItem.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
                   <Link
                     to={link.path}
                     className="block px-3 py-2 text-gray-900 hover:bg-gray-100/50 rounded-lg text-base font-medium transition-colors"
-                    onClick={(e) => {
-                      if (!link.submenu) {
-                        setIsMenuOpen(false);
-                      } else {
-                        e.preventDefault();
-                        toggleSubmenu(link.name);
-                      }
-                    }}
+                    onClick={() => setIsMenuOpen(false)}
                   >
                     {link.name}
                   </Link>
-                  {link.submenu && (
-                    <button 
-                      onClick={() => toggleSubmenu(link.name)}
-                      className="p-2 text-gray-500 hover:text-gray-700"
-                    >
-                      <FiChevronDown className={`w-4 h-4 transition-transform ${activeSubmenu === link.name ? 'transform rotate-180' : ''}`} />
-                    </button>
-                  )}
-                </div>
-                {link.submenu && activeSubmenu === link.name && (
-                  <div className="pl-4 space-y-1">
-                    {link.submenu.map((subItem) => (
-                      <Link
-                        key={subItem.name}
-                        to={subItem.path}
-                        className="flex items-center px-3 py-2 text-gray-600 hover:bg-gray-50/50 rounded-lg text-sm transition-colors"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          setActiveSubmenu(null);
-                          navigate(subItem.path);
-                        }}
-                      >
-                        {subItem.icon}
-                        {subItem.name}
-                      </Link>
-                    ))}
-                  </div>
                 )}
               </div>
             ))}

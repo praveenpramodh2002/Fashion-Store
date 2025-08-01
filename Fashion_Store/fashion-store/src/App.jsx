@@ -10,6 +10,9 @@ import SignUp from './pages/SignUp';
 
 import NewArrivals from './Shop/NewArrivals';
 import BestsellersPage from './Shop/BestSale';
+import SalePage from './Shop/Salle';
+import Collections from './Shop/Collections';
+import DressesPage from './Categories/Dresses';
 
 const App = () => {
   return (
@@ -31,6 +34,9 @@ const App = () => {
                 <Route path="/about" element={<AboutUs />} />
                   <Route path="/new-arrivals" element={<NewArrivals />} />
                   <Route path="/bestsellers" element={<BestsellersPage />} />
+                  <Route path="/shop/sale" element={<SalePage />} />
+                  <Route path="/shop/collections" element={<Collections />} />
+                  <Route path="/shop/dresses" element={<DressesPage />} />
                
 
               </Routes>
