@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { CartProvider } from './context/CartContext';
 
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -21,38 +22,40 @@ import SummerCollection from './Categories/Summercollection';
 
 const App = () => {
   return (
-    <Router>
-      <Routes>
-        {/* Routes WITHOUT Layout (no Navbar/Footer) */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        
+    <CartProvider>
+      <Router>
+        <Routes>
+          {/* Routes WITHOUT Layout (no Navbar/Footer) */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          
 
-        {/* Routes WITH Layout (includes Navbar/Footer) */}
-        <Route
-          path="*"
-          element={
-            <Layout>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/about" element={<AboutUs />} />
-                  <Route path="/new-arrivals" element={<NewArrivals />} />
-                  <Route path="/bestsellers" element={<BestsellersPage />} />
-                  <Route path="/shop/sale" element={<SalePage />} />
-                  <Route path="/shop/collections" element={<Collections />} />
-                  <Route path="/shop/dresses" element={<DressesPage />} />
-                  <Route path="/shop/outerwear" element={<MensOutwearPage />} />
-                  <Route path="/shop/accessories" element={<AccessoriesPage />} />
-                  <Route path="/shop/summer-collection" element={<SummerCollection />} />
-               
+          {/* Routes WITH Layout (includes Navbar/Footer) */}
+          <Route
+            path="*"
+            element={
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/about" element={<AboutUs />} />
+                    <Route path="/new-arrivals" element={<NewArrivals />} />
+                    <Route path="/bestsellers" element={<BestsellersPage />} />
+                    <Route path="/shop/sale" element={<SalePage />} />
+                    <Route path="/shop/collections" element={<Collections />} />
+                    <Route path="/shop/dresses" element={<DressesPage />} />
+                    <Route path="/shop/outerwear" element={<MensOutwearPage />} />
+                    <Route path="/shop/accessories" element={<AccessoriesPage />} />
+                    <Route path="/shop/summer-collection" element={<SummerCollection />} />
+                 
 
-              </Routes>
-            </Layout>
-          }
-        />
-      </Routes>
-    </Router>
+                </Routes>
+              </Layout>
+            }
+          />
+        </Routes>
+      </Router>
+    </CartProvider>
   );
 };
 

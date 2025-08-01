@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiHeart, FiShoppingBag, FiStar, FiFilter, FiX, FiChevronRight } from 'react-icons/fi';
+import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import summerImage from '../image/banner5.png'; // Import the summer image
 

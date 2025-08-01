@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowRight, FiHeart, FiShoppingBag } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCart } from '../context/CartContext';
 
 const CollectionPage = () => {
+  const { toggleWishlist, isInWishlist } = useCart();
+  
   // Hero images with animation effects
   const heroImages = [
     {
@@ -327,8 +330,11 @@ const CollectionPage = () => {
                     whileHover={{ opacity: 1 }}
                     className="absolute top-4 right-4 flex flex-col gap-2"
                   >
-                    <button className="bg-white p-2 rounded-full hover:bg-gray-100 transition">
-                      <FiHeart className="w-5 h-5" />
+                    <button 
+                      className="bg-white p-2 rounded-full hover:bg-gray-100 transition"
+                      onClick={() => toggleWishlist(product.id)}
+                    >
+                      <FiHeart className={`w-5 h-5 ${isInWishlist(product.id) ? 'text-red-500' : ''}`} />
                     </button>
                     <button className="bg-white p-2 rounded-full hover:bg-gray-100 transition">
                       <FiShoppingBag className="w-5 h-5" />

@@ -5,6 +5,7 @@ import {
   FiInstagram, FiTwitter, FiFacebook, FiTrash2, FiArrowRight, FiSettings,
   FiLogOut, FiCreditCard, FiPackage, FiStar, FiMessageSquare, FiTrendingUp, FiCalendar
 } from 'react-icons/fi';
+import { useCart } from '../context/CartContext';
 
 const navLinks = [
   { name: 'Home', path: '/' },
@@ -14,12 +15,12 @@ const navLinks = [
     submenu: [
       { 
         name: 'New Arrivals', 
-        path: '/shop/new-arrivals',
+        path: '/new-arrivals',
         icon: <FiCalendar className="mr-2 w-4 h-4" />
       },
       { 
         name: 'Bestsellers', 
-        path: '/shop/bestsellers',
+        path: '/bestsellers',
         icon: <FiTrendingUp className="mr-2 w-4 h-4" />
       },
       { name: 'Sale', path: '/shop/sale' },
@@ -33,7 +34,51 @@ const navLinks = [
   { name: 'Contact', path: '/contact' }
 ];
 
-const Navbar = ({ cartItems = [], wishlistItems = [], onRemoveFromCart, onRemoveFromWishlist }) => {
+const Navbar = () => {
+  const { cart, wishlist, removeFromCart, removeFromWishlist, calculateCartTotal } = useCart();
+  
+  // Sample product data to display wishlist items (in a real app, this would come from a database)
+  const allProducts = [
+    {
+      id: 1,
+      name: 'Premium Denim Jacket',
+      price: 89.99,
+      image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+    },
+    {
+      id: 2,
+      name: 'Silk Blend Blouse',
+      price: 59.99,
+      image: 'https://images.unsplash.com/photo-1581044777550-4cfa60707c03?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+    },
+    {
+      id: 3,
+      name: 'High-Waisted Trousers',
+      price: 65.99,
+      image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+    },
+    {
+      id: 4,
+      name: 'Cashmere Sweater',
+      price: 129.99,
+      image: 'https://images.unsplash.com/photo-1551232864-3f0890e580d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+    },
+    {
+      id: 5,
+      name: 'Leather Crossbody Bag',
+      price: 149.99,
+      image: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+    },
+    {
+      id: 6,
+      name: 'Wool Blend Coat',
+      price: 199.99,
+      image: 'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+    },
+  ];
+
+  // Get wishlist products with full details
+  const wishlistProducts = allProducts.filter(product => wishlist.includes(product.id));
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
@@ -55,7 +100,7 @@ const Navbar = ({ cartItems = [], wishlistItems = [], onRemoveFromCart, onRemove
     membership: 'Gold Member',
     joinDate: 'Joined January 2022',
     orderCount: 12,
-    wishlistCount: wishlistItems.length,
+    wishlistCount: wishlistProducts.length,
     rewardsPoints: 1250
   };
 
@@ -88,7 +133,7 @@ const Navbar = ({ cartItems = [], wishlistItems = [], onRemoveFromCart, onRemove
   }, [showCart, showWishlist, showUserMenu, activeSubmenu]);
 
   const calculateTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+    return calculateCartTotal();
   };
 
   const handleLogout = () => {
@@ -97,16 +142,12 @@ const Navbar = ({ cartItems = [], wishlistItems = [], onRemoveFromCart, onRemove
     navigate('/login');
   };
 
-  const handleRemoveFromCart = (id) => {
-    if (onRemoveFromCart) {
-      onRemoveFromCart(id);
-    }
+  const handleRemoveFromCart = (cartId) => {
+    removeFromCart(cartId);
   };
 
-  const handleRemoveFromWishlist = (id) => {
-    if (onRemoveFromWishlist) {
-      onRemoveFromWishlist(id);
-    }
+  const handleRemoveFromWishlist = (productId) => {
+    removeFromWishlist(productId);
   };
 
   const toggleSubmenu = (menuName) => {
@@ -232,9 +273,9 @@ const Navbar = ({ cartItems = [], wishlistItems = [], onRemoveFromCart, onRemove
                 }}
               >
                 <FiHeart className="w-5 h-5" />
-                {wishlistItems.length > 0 && (
+                {wishlist.length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    {wishlistItems.length}
+                    {wishlist.length}
                   </span>
                 )}
               </button>
@@ -242,24 +283,24 @@ const Navbar = ({ cartItems = [], wishlistItems = [], onRemoveFromCart, onRemove
               {showWishlist && (
                 <div className="wishlist-popup absolute right-0 mt-2 w-80 bg-white/95 backdrop-blur-lg shadow-xl rounded-lg z-50 border border-white/20 overflow-hidden">
                   <div className="p-4 border-b border-gray-100">
-                    <h3 className="font-medium text-gray-900">Your Wishlist ({wishlistItems.length})</h3>
+                    <h3 className="font-medium text-gray-900">Your Wishlist ({wishlistProducts.length})</h3>
                   </div>
                   <div className="max-h-96 overflow-y-auto">
-                    {wishlistItems.length > 0 ? (
-                      wishlistItems.map((item) => (
-                        <div key={item.id} className="p-4 border-b border-gray-100 flex items-center hover:bg-gray-50/50 transition-colors">
+                    {wishlistProducts.length > 0 ? (
+                      wishlistProducts.map((product) => (
+                        <div key={product.id} className="p-4 border-b border-gray-100 flex items-center hover:bg-gray-50/50 transition-colors">
                           <img 
-                            src={item.image} 
-                            alt={item.name} 
+                            src={product.image} 
+                            alt={product.name} 
                             className="w-16 h-16 object-cover rounded mr-4"
                           />
                           <div className="flex-1">
-                            <h4 className="text-sm font-medium text-gray-900">{item.name}</h4>
-                            <p className="text-sm text-gray-600">${item.price.toFixed(2)}</p>
+                            <h4 className="text-sm font-medium text-gray-900">{product.name}</h4>
+                            <p className="text-sm text-gray-600">${product.price.toFixed(2)}</p>
                           </div>
                           <button 
                             className="text-gray-400 hover:text-red-500 transition-colors"
-                            onClick={() => handleRemoveFromWishlist(item.id)}
+                            onClick={() => handleRemoveFromWishlist(product.id)}
                           >
                             <FiTrash2 className="w-4 h-4" />
                           </button>
@@ -271,7 +312,7 @@ const Navbar = ({ cartItems = [], wishlistItems = [], onRemoveFromCart, onRemove
                       </div>
                     )}
                   </div>
-                  {wishlistItems.length > 0 && (
+                  {wishlistProducts.length > 0 && (
                     <div className="p-4 border-t border-gray-100">
                       <Link 
                         to="/wishlist" 
@@ -298,9 +339,9 @@ const Navbar = ({ cartItems = [], wishlistItems = [], onRemoveFromCart, onRemove
                 }}
               >
                 <FiShoppingBag className="w-5 h-5" />
-                {cartItems.length > 0 && (
+                {cart.length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    {cartItems.length}
+                    {cart.reduce((total, item) => total + item.quantity, 0)}
                   </span>
                 )}
               </button>
@@ -308,13 +349,13 @@ const Navbar = ({ cartItems = [], wishlistItems = [], onRemoveFromCart, onRemove
               {showCart && (
                 <div className="cart-popup absolute right-0 mt-2 w-80 bg-white/95 backdrop-blur-lg shadow-xl rounded-lg z-50 border border-white/20 overflow-hidden">
                   <div className="p-4 border-b border-gray-100">
-                    <h3 className="font-medium text-gray-900">Your Cart ({cartItems.length})</h3>
+                    <h3 className="font-medium text-gray-900">Your Cart ({cart.length})</h3>
                   </div>
                   <div className="max-h-96 overflow-y-auto">
-                    {cartItems.length > 0 ? (
+                    {cart.length > 0 ? (
                       <>
-                        {cartItems.map((item) => (
-                          <div key={item.id} className="p-4 border-b border-gray-100 flex items-center hover:bg-gray-50/50 transition-colors">
+                        {cart.map((item) => (
+                          <div key={item.cartId} className="p-4 border-b border-gray-100 flex items-center hover:bg-gray-50/50 transition-colors">
                             <img 
                               src={item.image} 
                               alt={item.name} 
@@ -322,12 +363,12 @@ const Navbar = ({ cartItems = [], wishlistItems = [], onRemoveFromCart, onRemove
                             />
                             <div className="flex-1">
                               <h4 className="text-sm font-medium text-gray-900">{item.name}</h4>
-                              <p className="text-xs text-gray-500">{item.color} / {item.size}</p>
+                              <p className="text-xs text-gray-500">{item.selectedColor} / {item.selectedSize}</p>
                               <div className="flex items-center justify-between mt-1">
                                 <p className="text-sm text-gray-600">${item.price.toFixed(2)} × {item.quantity}</p>
                                 <button 
                                   className="text-gray-400 hover:text-red-500 transition-colors"
-                                  onClick={() => handleRemoveFromCart(item.id)}
+                                  onClick={() => handleRemoveFromCart(item.cartId)}
                                 >
                                   <FiTrash2 className="w-4 h-4" />
                                 </button>

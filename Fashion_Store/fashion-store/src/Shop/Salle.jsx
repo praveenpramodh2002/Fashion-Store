@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiClock, FiTag, FiArrowRight, FiChevronLeft, FiChevronRight, FiShoppingBag, FiHeart, FiX } from 'react-icons/fi';
+import { useCart } from '../context/CartContext';
 
 // Import your local banner images
 import banner1 from '../image/banner4.png';
@@ -19,9 +20,10 @@ const SalePage = () => {
   });
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [wishlist, setWishlist] = useState([]);
   const [selectedSizes, setSelectedSizes] = useState({});
   const [selectedColors, setSelectedColors] = useState({});
+  
+  const { addToCart, toggleWishlist, isInWishlist } = useCart();
 
   // Banner images array
   const heroBanners = [
@@ -263,12 +265,8 @@ const SalePage = () => {
     document.body.style.overflow = 'auto';
   };
 
-  const toggleWishlist = (productId) => {
-    if (wishlist.includes(productId)) {
-      setWishlist(wishlist.filter(id => id !== productId));
-    } else {
-      setWishlist([...wishlist, productId]);
-    }
+  const handleToggleWishlist = (productId) => {
+    toggleWishlist(productId);
   };
 
   const handleSizeSelect = (productId, size) => {
@@ -285,11 +283,11 @@ const SalePage = () => {
     }));
   };
 
-  const addToCart = (product) => {
-    const size = selectedSizes[product.id];
-    const color = selectedColors[product.id];
+  const handleAddToCart = (product) => {
+    const size = selectedSizes[product.id] || product.sizes[0];
+    const color = selectedColors[product.id] || product.colors[0];
     
-    alert(`Added to cart: ${product.name}\nSize: ${size || 'N/A'}\nColor: ${color || 'N/A'}`);
+    addToCart(product, color, size, 1);
     closeModal();
   };
 
@@ -441,15 +439,15 @@ const SalePage = () => {
                 
                 {/* Wishlist Button */}
                 <button 
-                  onClick={() => toggleWishlist(product.id)}
+                  onClick={() => handleToggleWishlist(product.id)}
                   className={`absolute top-16 right-4 z-10 p-2 rounded-full ${
-                    wishlist.includes(product.id) 
+                    isInWishlist(product.id) 
                       ? 'text-red-500 bg-white/80' 
                       : 'text-white bg-black/30'
                   }`}
-                  aria-label={wishlist.includes(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                  aria-label={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
                 >
-                  <FiHeart className={`w-5 h-5 ${wishlist.includes(product.id) ? 'fill-current' : ''}`} />
+                  <FiHeart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />
                 </button>
                 
                 {/* Product Image */}
@@ -619,7 +617,7 @@ const SalePage = () => {
                         
                         <div className="flex gap-4 mt-6">
                           <button 
-                            onClick={() => addToCart(quickViewProduct)}
+                            onClick={() => handleAddToCart(quickViewProduct)}
                             className="flex-1 bg-black text-white px-4 py-3 text-sm font-medium hover:bg-gray-800 transition-colors"
                           >
                             Add to Bag
@@ -636,7 +634,7 @@ const SalePage = () => {
                         </div>
                         
                         <button 
-                          onClick={() => toggleWishlist(quickViewProduct.id)}
+                          onClick={() => handleToggleWishlist(quickViewProduct.id)}
                           className="mt-4 flex items-center text-gray-500 hover:text-gray-700"
                         >
                           <FiHeart className={`mr-2 ${wishlist.includes(quickViewProduct.id) ? 'text-red-500 fill-current' : ''}`} />

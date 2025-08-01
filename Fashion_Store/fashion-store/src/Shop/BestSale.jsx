@@ -1,5 +1,6 @@
 import { StarIcon, HeartIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
+import { useCart } from '../context/CartContext';
 // Import your brand logos from assets
 import ZaraLogo from '../image/zara.jpeg';
 import HMLogo from '../image/H&M.jpeg';
@@ -8,6 +9,8 @@ import AdidasLogo from '../image/Adidas.jpeg';
 import NikeLogo from '../image/nike.jpeg';
 
 const BestsellersPage = () => {
+  const { toggleWishlist, isInWishlist, addToCart } = useCart();
+  
   // Brand logos imported from your assets
   const brandLogos = [
     { src: ZaraLogo, alt: "Zara" },
@@ -33,6 +36,17 @@ const BestsellersPage = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, [heroImages.length]);
+
+  // Handle adding item to cart
+  const handleAddToCart = (product) => {
+    // Default to first available color and size, or you can add a modal for selection
+    const defaultColor = product.colors[0];
+    const defaultSize = 'M'; // You can make this dynamic based on available sizes
+    addToCart(product, defaultColor, defaultSize, 1);
+    
+    // Show success feedback (you can replace this with a toast notification)
+    alert(`${product.name} added to cart!`);
+  };
 
   // Updated bestseller data
   const bestsellers = [
@@ -191,12 +205,18 @@ const BestsellersPage = () => {
                     e.target.src = 'https://via.placeholder.com/500x500?text=Product+Image';
                   }}
                 />
-                <button 
-                  className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all duration-300 transform hover:scale-110"
-                  aria-label="Add to favorites"
-                >
-                  <HeartIcon className="h-5 w-5 text-gray-700 hover:text-red-500 transition-colors" />
-                </button>
+                                 <button 
+                   className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all duration-300 transform hover:scale-110"
+                   aria-label="Add to favorites"
+                   onClick={() => {
+                     toggleWishlist(product.id);
+                     if (!isInWishlist(product.id)) {
+                       alert(`${product.name} added to wishlist!`);
+                     }
+                   }}
+                 >
+                   <HeartIcon className={`h-5 w-5 transition-colors ${isInWishlist(product.id) ? 'text-red-500' : 'text-gray-700 hover:text-red-500'}`} />
+                 </button>
                 {/* Color options */}
                 <div className="absolute bottom-3 left-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   {product.colors.map((color, i) => (
@@ -236,7 +256,10 @@ const BestsellersPage = () => {
                   ${product.price.toFixed(2)}
                 </p>
               </div>
-              <button className="mt-3 w-full py-2 bg-gray-100 text-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-gray-200">
+              <button 
+                className="mt-3 w-full py-2 bg-gray-100 text-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-gray-200"
+                onClick={() => handleAddToCart(product)}
+              >
                 Add to Cart
               </button>
             </div>

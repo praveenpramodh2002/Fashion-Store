@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiHeart, FiShoppingBag, FiStar, FiFilter, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import dressesVideo from '../video/dresses.mp4';
 
@@ -20,12 +21,12 @@ const DressesPage = () => {
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const [selectedDress, setSelectedDress] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [wishlist, setWishlist] = useState([]);
-  const [cart, setCart] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const videoRef = useRef(null);
+  
+  const { addToCart, toggleWishlist, isInWishlist } = useCart();
 
   // Try to autoplay video on mount
   useEffect(() => {
@@ -210,15 +211,11 @@ const DressesPage = () => {
     document.body.style.overflow = 'auto';
   };
 
-  const toggleWishlist = (dressId) => {
-    if (wishlist.includes(dressId)) {
-      setWishlist(wishlist.filter(id => id !== dressId));
-    } else {
-      setWishlist([...wishlist, dressId]);
-    }
+  const handleToggleWishlist = (dressId) => {
+    toggleWishlist(dressId);
   };
 
-  const addToCart = (dress) => {
+  const handleAddToCart = (dress) => {
     if (!selectedSize) {
       alert('Please select a size');
       return;
@@ -228,28 +225,7 @@ const DressesPage = () => {
       return;
     }
 
-    const existingItem = cart.find(item => 
-      item.id === dress.id && 
-      item.size === selectedSize && 
-      item.color === selectedColor
-    );
-    
-    if (existingItem) {
-      setCart(cart.map(item => 
-        item.id === dress.id && item.size === selectedSize && item.color === selectedColor
-          ? { ...item, quantity: item.quantity + quantity } 
-          : item
-      ));
-    } else {
-      setCart([...cart, { 
-        ...dress, 
-        quantity,
-        size: selectedSize,
-        color: selectedColor,
-        image: dress.colorImages[selectedColor] || dress.image
-      }]);
-    }
-    
+    addToCart(dress, selectedColor, selectedSize, quantity);
     closePopup();
   };
 
@@ -427,10 +403,10 @@ const DressesPage = () => {
                     className="bg-white p-2 rounded-full hover:bg-gray-100 transition"
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleWishlist(dress.id);
+                      handleToggleWishlist(dress.id);
                     }}
                   >
-                    <FiHeart className={`w-4 h-4 ${wishlist.includes(dress.id) ? 'fill-red-500 text-red-500' : ''}`} />
+                                          <FiHeart className={`w-4 h-4 ${isInWishlist(dress.id) ? 'fill-red-500 text-red-500' : ''}`} />
                   </button>
                   <button 
                     className="bg-white p-2 rounded-full hover:bg-gray-100 transition"
@@ -438,7 +414,7 @@ const DressesPage = () => {
                       e.stopPropagation();
                       setSelectedDress(dress);
                       setQuantity(1);
-                      addToCart(dress);
+                      handleAddToCart(dress);
                     }}
                   >
                     <FiShoppingBag className="w-4 h-4" />
@@ -610,23 +586,23 @@ const DressesPage = () => {
                     <div className="flex flex-col sm:flex-row gap-4">
                       <button 
                         className="flex-1 bg-black text-white py-3 px-6 rounded-md font-medium hover:bg-gray-800 transition-colors flex items-center justify-center"
-                        onClick={() => addToCart(selectedDress)}
+                        onClick={() => handleAddToCart(selectedDress)}
                       >
                         <FiShoppingBag className="mr-2" />
                         Add to Cart
                       </button>
                       <button 
                         className={`flex-1 py-3 px-6 rounded-md font-medium border ${
-                          wishlist.includes(selectedDress.id) 
+                          isInWishlist(selectedDress.id) 
                             ? 'border-red-500 text-red-500' 
                             : 'border-gray-300 hover:border-gray-400'
                         } transition-colors flex items-center justify-center`}
-                        onClick={() => toggleWishlist(selectedDress.id)}
+                        onClick={() => handleToggleWishlist(selectedDress.id)}
                       >
-                        <FiHeart className={`mr-2 ${
-                          wishlist.includes(selectedDress.id) ? 'fill-red-500 text-red-500' : ''
-                        }`} />
-                        {wishlist.includes(selectedDress.id) ? 'In Wishlist' : 'Add to Wishlist'}
+                                                  <FiHeart className={`mr-2 ${
+                            isInWishlist(selectedDress.id) ? 'fill-red-500 text-red-500' : ''
+                          }`} />
+                          {isInWishlist(selectedDress.id) ? 'In Wishlist' : 'Add to Wishlist'}
                       </button>
                     </div>
                   </div>

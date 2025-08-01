@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FiHeart, FiShoppingBag, FiChevronDown, FiX, FiStar } from 'react-icons/fi';
 import { FaFacebookF, FaTwitter, FaPinterestP, FaLinkedinIn } from 'react-icons/fa';
+import { useCart } from '../context/CartContext';
 
 // Import local men's fashion images
 import m1 from '../image/m1.jpeg';
@@ -18,10 +19,10 @@ const MensOutwearPage = () => {
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [selectedColors, setSelectedColors] = useState([]);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
-  const [wishlist, setWishlist] = useState([]);
-  const [cart, setCart] = useState([]);
   const [quickViewSelectedColor, setQuickViewSelectedColor] = useState(null);
   const [quickViewSelectedSize, setQuickViewSelectedSize] = useState(null);
+  
+  const { addToCart, toggleWishlist, isInWishlist } = useCart();
 
   // Men's outwear products data with local images
   const mensOutwearProducts = [
@@ -165,12 +166,8 @@ const MensOutwearPage = () => {
     return true;
   });
 
-  const toggleWishlist = (productId) => {
-    if (wishlist.includes(productId)) {
-      setWishlist(wishlist.filter(id => id !== productId));
-    } else {
-      setWishlist([...wishlist, productId]);
-    }
+  const handleToggleWishlist = (productId) => {
+    toggleWishlist(productId);
   };
 
   const toggleSize = (size) => {
@@ -201,36 +198,13 @@ const MensOutwearPage = () => {
     setQuickViewSelectedSize(null);
   };
 
-  const addToCart = (product, color, size) => {
-    const newItem = {
-      id: `${product.id}-${color}-${size}`,
-      productId: product.id,
-      name: product.name,
-      price: product.price,
-      color,
-      size,
-      image: product.image,
-      quantity: 1
-    };
-    
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === newItem.id);
-      if (existingItem) {
-        return prevCart.map(item =>
-          item.id === newItem.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      } else {
-        return [...prevCart, newItem];
-      }
-    });
-    
+  const handleAddToCart = (product, color, size) => {
+    addToCart(product, color, size, 1);
     closeQuickView();
   };
 
   const handleAddToCartFromGrid = (product) => {
-    addToCart(product, product.colors[0], product.sizes[0]);
+    handleAddToCart(product, product.colors[0], product.sizes[0]);
   };
 
   return (
@@ -415,13 +389,13 @@ const MensOutwearPage = () => {
                       />
                       {/* Wishlist Button */}
                       <button
-                        onClick={() => toggleWishlist(product.id)}
+                        onClick={() => handleToggleWishlist(product.id)}
                         className={`absolute top-4 right-4 p-2 rounded-full ${
-                          wishlist.includes(product.id) ? 'text-red-500 bg-white/90' : 'text-gray-400 bg-white/90'
+                          isInWishlist(product.id) ? 'text-red-500 bg-white/90' : 'text-gray-400 bg-white/90'
                         }`}
-                        aria-label={wishlist.includes(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                        aria-label={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
                       >
-                        <FiHeart className={`w-5 h-5 ${wishlist.includes(product.id) ? 'fill-current' : ''}`} />
+                                                  <FiHeart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />
                       </button>
                       {/* Quick View Button */}
                       <button
@@ -595,17 +569,17 @@ const MensOutwearPage = () => {
                         {/* Action Buttons */}
                         <div className="flex gap-4">
                           <button 
-                            onClick={() => addToCart(quickViewProduct, quickViewSelectedColor, quickViewSelectedSize)}
+                            onClick={() => handleAddToCart(quickViewProduct, quickViewSelectedColor, quickViewSelectedSize)}
                             className="flex-1 bg-black text-white px-4 py-3 font-medium hover:bg-gray-800 transition-colors"
                           >
                             Add to Bag
                           </button>
                           <button
-                            onClick={() => toggleWishlist(quickViewProduct.id)}
+                            onClick={() => handleToggleWishlist(quickViewProduct.id)}
                             className="flex-1 bg-white border border-black text-black px-4 py-3 font-medium hover:bg-gray-100 transition-colors flex items-center justify-center"
                           >
-                            <FiHeart className={`mr-2 ${wishlist.includes(quickViewProduct.id) ? 'text-red-500 fill-current' : ''}`} />
-                            {wishlist.includes(quickViewProduct.id) ? 'Saved' : 'Save'}
+                                                          <FiHeart className={`mr-2 ${isInWishlist(quickViewProduct.id) ? 'text-red-500 fill-current' : ''}`} />
+                              {isInWishlist(quickViewProduct.id) ? 'Saved' : 'Save'}
                           </button>
                         </div>
                         
