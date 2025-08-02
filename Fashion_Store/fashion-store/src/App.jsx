@@ -19,6 +19,7 @@ import MensOutwearPage from './Categories/Outwear';
 import AccessoriesPage from './Categories/Accerious';
 import SummerCollection from './Categories/Summercollection';
 
+import Payment from './pages/Payment';
 
 const App = () => {
   return (
@@ -47,6 +48,7 @@ const App = () => {
                     <Route path="/shop/outerwear" element={<MensOutwearPage />} />
                     <Route path="/shop/accessories" element={<AccessoriesPage />} />
                     <Route path="/shop/summer-collection" element={<SummerCollection />} />
+                    <Route path="/payment" element={<Payment />} />
                  
 
                 </Routes>
